@@ -4,6 +4,8 @@ from threading import Thread
 from time import sleep
 import re
 from datetime import datetime
+from os import *
+import platform
 
 def regx_finder(text):
     # Regex to match two numbers with an operator (+, -, *, /, ^) in between
@@ -52,13 +54,15 @@ class MathServerCommunicationThread(Thread):
 		self.conn = conn
 		self.addr = addr
 		self.username = ""
-		self.blocked_ips = {'127.0.0.1'}
+		self.blocked_ips = set()
 	
 	def run(self):
 		self.conn.sendall("\nPlease enter your name\n".encode())
 		self.username = self.conn.recv(1024)
+		user = self.username.strip().decode()
+		current_time = datetime.now().ctime()
 		if self.username != "" and self.addr[0] not in self.blocked_ips:
-			print("{} : {} connected with back port {} at {}".format(self.username.strip().decode(),self.addr[0], self.addr[1],datetime.now().ctime()))
+			print(f"{user} : {self.addr[0]} connected with back port {self.addr[1]} at {current_time}\nDevice name : {name}\nDevice platform : {platform.system()}")
 			self.conn.sendall("Simple Math Server developed by LAHTP \n\nGive any math expressions, and I will answer you :) \n\n$ ".encode())
 		else:
 			print("blocked ip {} try to connect our server at {}".format(self.addr[0],datetime.now().ctime()))
@@ -124,5 +128,3 @@ while True: # To accept many incoming connections.
 	sleep(1)
 	start_new_math_thread(conn, addr)
 s.close()
-
-	
